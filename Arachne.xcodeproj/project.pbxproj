@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4AD180AC1FD8DF3E00B049CD /* worldPlane.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AD180AB1FD8DF3E00B049CD /* worldPlane.m */; };
 		9852903B1FD6ACB4005B9DE0 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9852903A1FD6ACB4005B9DE0 /* AppDelegate.m */; };
 		9852903D1FD6ACB4005B9DE0 /* art.scnassets in Resources */ = {isa = PBXBuildFile; fileRef = 9852903C1FD6ACB4005B9DE0 /* art.scnassets */; };
 		985290401FD6ACB4005B9DE0 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9852903F1FD6ACB4005B9DE0 /* ViewController.m */; };
@@ -17,6 +18,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		4AD180AA1FD8DF3E00B049CD /* worldPlane.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = worldPlane.h; path = Asserts/worldPlane.h; sourceTree = SOURCE_ROOT; };
+		4AD180AB1FD8DF3E00B049CD /* worldPlane.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = worldPlane.m; path = Asserts/worldPlane.m; sourceTree = SOURCE_ROOT; };
 		985290361FD6ACB4005B9DE0 /* Arachne.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Arachne.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		985290391FD6ACB4005B9DE0 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		9852903A1FD6ACB4005B9DE0 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -41,9 +44,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4AD180AD1FD8DF5500B049CD /* Asserts */ = {
+			isa = PBXGroup;
+			children = (
+				4AD180AA1FD8DF3E00B049CD /* worldPlane.h */,
+				4AD180AB1FD8DF3E00B049CD /* worldPlane.m */,
+			);
+			path = Asserts;
+			sourceTree = "<group>";
+		};
 		9852902D1FD6ACB4005B9DE0 = {
 			isa = PBXGroup;
 			children = (
+				4AD180AD1FD8DF5500B049CD /* Asserts */,
 				985290381FD6ACB4005B9DE0 /* Arachne */,
 				985290371FD6ACB4005B9DE0 /* Products */,
 			);
@@ -60,7 +73,6 @@
 		985290381FD6ACB4005B9DE0 /* Arachne */ = {
 			isa = PBXGroup;
 			children = (
-				985290511FD6AE57005B9DE0 /* plane */,
 				985290391FD6ACB4005B9DE0 /* AppDelegate.h */,
 				9852903A1FD6ACB4005B9DE0 /* AppDelegate.m */,
 				9852903C1FD6ACB4005B9DE0 /* art.scnassets */,
@@ -73,13 +85,6 @@
 				9852904A1FD6ACB4005B9DE0 /* main.m */,
 			);
 			path = Arachne;
-			sourceTree = "<group>";
-		};
-		985290511FD6AE57005B9DE0 /* plane */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = plane;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -156,6 +161,7 @@
 			files = (
 				985290401FD6ACB4005B9DE0 /* ViewController.m in Sources */,
 				9852904B1FD6ACB4005B9DE0 /* main.m in Sources */,
+				4AD180AC1FD8DF3E00B049CD /* worldPlane.m in Sources */,
 				9852903B1FD6ACB4005B9DE0 /* AppDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -291,10 +297,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = J6V25V92SY;
+				DEVELOPMENT_TEAM = P5NMFQNK9W;
 				INFOPLIST_FILE = Arachne/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = york.Arachne;
+				PRODUCT_BUNDLE_IDENTIFIER = york.Arachnew;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -305,10 +311,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = J6V25V92SY;
+				DEVELOPMENT_TEAM = P5NMFQNK9W;
 				INFOPLIST_FILE = Arachne/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = york.Arachne;
+				PRODUCT_BUNDLE_IDENTIFIER = york.Arachnew;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

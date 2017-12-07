@@ -7,7 +7,8 @@
 //
 #import <Vision/Vision.h>
 #import "ViewController.h"
-#import "PlaneNode.h"
+#import "worldPlane.h"
+
 
 
 @interface ViewController () <ARSCNViewDelegate, ARSessionDelegate>
@@ -24,19 +25,23 @@
     VNDetectBarcodesRequest *barcodeDetecion;
     VNSequenceRequestHandler *barcodeRequest;
     dispatch_queue_t barcodeQueue;
+    
+    WorldPlane *worldPlane;
+    NSUUID *worldPlaneId;
+    BOOL isWorldPlaneDefined;
+    
     BOOL isDetected;
     BOOL isSetted;
+    
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    // Set the view's delegate
     self.sceneView.delegate = self;
     
     self.sceneView.session.delegate = self;
     
-    // Show statistics such as fps and timing information
     self.sceneView.showsStatistics = YES;
     
     self.sceneView.debugOptions = ARSCNDebugOptionShowWorldOrigin | ARSCNDebugOptionShowFeaturePoints;
@@ -55,6 +60,7 @@
     detectedAnchor = nil;
     isDetected = false;
     isSetted = false;
+    isWorldPlaneDefined = false;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -82,17 +88,29 @@
 
 #pragma mark - ARSCNViewDelegate
 
-//- (void)renderer:(id<SCNSceneRenderer>)renderer didAddNode:(SCNNode *)node forAnchor:(ARAnchor *)anchor {
-//    if([anchor isKindOfClass: [ARPlaneAnchor class]]) {
-////        PlaneNode * plane = [[PlaneNode alloc] init];
-////        [plane initWithAnchor:anchor];
-////
-////        plandic[anchor.identifier] = plane;
-////        [node addChildNode:plane];
-//    }
-//}
+- (void)renderer:(id <SCNSceneRenderer>)renderer didAddNode:(SCNNode *)node forAnchor:(ARAnchor *)anchor {
+    if (![anchor isKindOfClass:[ARPlaneAnchor class]]) {
+        return;
+    }
+    if(!isWorldPlaneDefined) {
+        NSLog(@"get plane");
+        WorldPlane *plane = [[WorldPlane alloc] initWithAnchor: (ARPlaneAnchor *)anchor];
+        worldPlane = plane;
+        worldPlaneId = anchor.identifier;
+        [node addChildNode:plane];
+        isWorldPlaneDefined = true;
+    }
+}
 
 - (void)renderer:(id<SCNSceneRenderer>)renderer didUpdateNode:(SCNNode *)node forAnchor:(ARAnchor *)anchor {
+    if(isWorldPlaneDefined) {
+        if (anchor.identifier == worldPlaneId) {
+            [worldPlane update:anchor];
+        }
+    }
+}
+
+- (void) renderer:(id<SCNSceneRenderer>)renderer didRemoveNode:(SCNNode *)node forAnchor:(ARAnchor *)anchor {
     
 }
 
@@ -113,25 +131,6 @@
     // Reset tracking and/or remove existing anchors if consistent tracking is required
     
 }
-
-- (SCNNode *) renderer:(id<SCNSceneRenderer>)renderer nodeForAnchor:(ARAnchor *)anchor {
-    if(detectedAnchor!= nil) {
-        if(detectedAnchor.identifier == anchor.identifier) {
-            
-            SCNPlane *plane = [[SCNPlane alloc] init];
-            [plane setWidth:.01];
-            [plane setHeight:.01];
-            SCNMaterial *material = [[SCNMaterial alloc] init];
-            material.lightingModelName = SCNLightingModelLambert;
-            [plane setMaterials:@[material]];
-            
-            SCNNode *node = [SCNNode nodeWithGeometry:plane];
-            return node;
-        }
-    }
-    return nil;
-}
-
 
 - (void)session:(ARSession *)session didUpdateFrame:(ARFrame *)frame {
     
