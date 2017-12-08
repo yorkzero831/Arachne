@@ -16,6 +16,12 @@
     NSMutableDictionary *plandic;
     dispatch_queue_t barcodeQueue;
     
+    //image witdh
+    CGFloat iw;
+    //image height
+    CGFloat ih;
+    
+    
     WorldPlane *worldPlane;
     NSUUID *worldPlaneId;
     BOOL isWorldPlaneDefined;
@@ -26,6 +32,11 @@
     
     BOOL isDetected;
     BOOL isSetted;
+    
+    double rotateAnge;
+    SCNVector3 centerPoint;
+    
+    NSString* selectBlockName;
     
 }
 
@@ -48,6 +59,7 @@
     isWorldPlaneDefined = false;
     isWorldPlaneFinished = false;
     worldPlaneUpdateTimes = 0;
+    
 }
 
 - (void) ARManagerViewConfigureSession {
@@ -122,8 +134,8 @@
     CIImage *image = [CIImage imageWithCVImageBuffer:ref];
     dispatch_async(barcodeQueue, ^{
         
-        CGFloat iw = image.extent.size.width;
-        CGFloat ih = image.extent.size.height;
+        iw = image.extent.size.width;
+        ih = image.extent.size.height;
         
         CIDetector *detector = [CIDetector detectorOfType:CIDetectorTypeQRCode context:nil options:nil];
         NSArray<CIFeature *> *features = [detector featuresInImage:image];
@@ -197,18 +209,65 @@
                 double centerY = ( rTL.firstObject.worldTransform.columns[3][1] + rBL.firstObject.worldTransform.columns[3][1] + rTR.firstObject.worldTransform.columns[3][1] + rBR.firstObject.worldTransform.columns[3][1] ) /4;
                 double centerZ = ( rTL.firstObject.worldTransform.columns[3][2] + rBL.firstObject.worldTransform.columns[3][2] + rTR.firstObject.worldTransform.columns[3][2] + rBR.firstObject.worldTransform.columns[3][2] ) /4;
                 
-                
                 SCNNode *world = [self.scene.rootNode childNodeWithName:@"Arachne" recursively:YES];
                 [world setPosition:SCNVector3Make(centerX, centerY, centerZ)];
                 [world setRotation:SCNVector4Make(0, 1, 0, -thelt)];
                 NSLog(@"x:%f y:%f z:%f", world.position.x, world.position.y, world.position.z);
                 
-                
+                rotateAnge = thelt;
+                centerPoint = SCNVector3Make(centerX, centerY, centerZ);
                 isDetected = true;
             }
         }
     });
     
+}
+
+#pragma mark UITouch
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+    NSLog(@"touched");
+    UITouch *touch = [[touches allObjects] firstObject];
+    CGPoint point = [touch locationInView:self];
+    NSLog(@"x: %f, y:%f", point.x, point.y);
+    [self createBlock: point];
+}
+
+- (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+    
+}
+
+- (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+    
+}
+
+#pragma mark Block
+- (void)setSelectBlockName :(NSString*)name {
+    selectBlockName = name;
+}
+
+- (void)createBlock :(CGPoint)point {
+    CGRect screenBounds = [self bounds];
+    
+    float x = point.x ;/// screenBounds.size.width;
+    float y = point.y; /// screenBounds.size.height;
+    NSLog(@"x: %f, y:%f", x, y);
+    
+    NSArray<ARHitTestResult *> *resluts = [self hitTest:CGPointMake(x, y) types:ARHitTestResultTypeExistingPlane];
+    if(resluts.count != 0){
+        SCNBox *box = [[SCNBox alloc] init];
+        SCNNode *node = [SCNNode nodeWithGeometry:box];
+        
+        float px = resluts.firstObject.worldTransform.columns[3][0] + centerPoint.x;
+        float py = resluts.firstObject.worldTransform.columns[3][1];
+        float pz = resluts.firstObject.worldTransform.columns[3][2];
+        
+        NSLog(@"x:%f y:%f z:%f", px, py, pz);
+        
+        [node setPosition:SCNVector3Make(px, py, pz)];
+        [node setRotation:SCNVector4Make(0, 1, 0, -rotateAnge)];
+        [node setScale:SCNVector3Make(0.02, 0.02, 0.02)];
+        [self.scene.rootNode addChildNode:node];
+    }
 }
 
 

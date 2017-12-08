@@ -61,6 +61,10 @@
                                         </tableViewCellContentView>
                                     </tableViewCell>
                                 </prototypes>
+                                <connections>
+                                    <outlet property="dataSource" destination="BV1-FR-VrT" id="8hW-Y0-i8h"/>
+                                    <outlet property="delegate" destination="BV1-FR-VrT" id="KHY-MJ-IIO"/>
+                                </connections>
                             </tableView>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0wJ-cx-IBl">
                                 <rect key="frame" x="125" y="159" width="46" height="30"/>
@@ -76,7 +80,7 @@
                     </view>
                     <connections>
                         <outlet property="sceneView" destination="gib-SQ-yxl" id="GIi-sQ-j0z"/>
-                        <outlet property="subMenu" destination="8VC-E7-onQ" id="90k-R7-e6O"/>
+                        <outlet property="subMenu" destination="8VC-E7-onQ" id="cGe-X8-xNC"/>
                         <outlet property="subMenuButton" destination="0wJ-cx-IBl" id="qsW-8y-nRt"/>
                     </connections>
                 </viewController>

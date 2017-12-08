@@ -13,5 +13,6 @@
 - (void) ARManagerViewLoaded;
 - (void) ARManagerViewConfigureSession;
 - (void) ARManagerViewStop;
+- (void) setSelectBlockName :(NSString*)name;
 
 @end
