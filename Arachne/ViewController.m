@@ -7,244 +7,49 @@
 //
 #import <Vision/Vision.h>
 #import "ViewController.h"
-#import "worldPlane.h"
+#import "ARManagerView.h"
+#import "SubMenu.h"
 
 
 
-@interface ViewController () <ARSCNViewDelegate, ARSessionDelegate>
+@interface ViewController ()
 
-@property (nonatomic, strong) IBOutlet ARSCNView *sceneView;
+@property (nonatomic, strong) IBOutlet ARManagerView *sceneView;
+
+@property (weak, nonatomic) IBOutlet UIButton *subMenuButton;
+@property (weak, nonatomic) IBOutlet SubMenu *subMenu;
 
 @end
 
     
 @implementation ViewController {
     
-    ARAnchor *detectedAnchor;
-    NSMutableDictionary *plandic;
-    VNDetectBarcodesRequest *barcodeDetecion;
-    VNSequenceRequestHandler *barcodeRequest;
-    dispatch_queue_t barcodeQueue;
-    
-    WorldPlane *worldPlane;
-    NSUUID *worldPlaneId;
-    BOOL isWorldPlaneDefined;
-    BOOL isWorldPlaneFinished;
-    int worldPlaneUpdateTimes;
-    
-    float qrcodeCorners[8];
-    
-    BOOL isDetected;
-    BOOL isSetted;
-    
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-
-    self.sceneView.delegate = self;
-    
-    self.sceneView.session.delegate = self;
-    
-    self.sceneView.showsStatistics = YES;
-    
-    self.sceneView.debugOptions = ARSCNDebugOptionShowWorldOrigin | ARSCNDebugOptionShowFeaturePoints;
-    
-    // Create a new scene
-    SCNScene *scene = [SCNScene sceneNamed:@"art.scnassets/ship.scn"];
-    
-    // Set the scene to the view
-    self.sceneView.scene = scene;
-    
-    plandic = [NSMutableDictionary dictionary];
-    
-    barcodeDetecion = [[VNDetectBarcodesRequest alloc] init];
-    barcodeRequest = [[VNSequenceRequestHandler alloc] init];
-    barcodeQueue = dispatch_queue_create("york_barcode_queue", nil);
-    detectedAnchor = nil;
-    isDetected = false;
-    isSetted = false;
-    isWorldPlaneDefined = false;
-    isWorldPlaneFinished = false;
-    worldPlaneUpdateTimes = 0;
+    [_sceneView ARManagerViewLoaded];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    
-    // Create a session configuration
-    ARWorldTrackingConfiguration *configuration = [ARWorldTrackingConfiguration new];
-    configuration.planeDetection = ARPlaneDetectionHorizontal;
+    [_sceneView ARManagerViewConfigureSession];
 
-    // Run the view's session
-    [self.sceneView.session runWithConfiguration:configuration];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
+    [_sceneView ARManagerViewStop];
     
-    // Pause the view's session
-    [self.sceneView.session pause];
 }
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
-    // Release any cached data, images, etc that aren't in use.
 }
 
-#pragma mark - ARSCNViewDelegate
-
-- (void)renderer:(id <SCNSceneRenderer>)renderer didAddNode:(SCNNode *)node forAnchor:(ARAnchor *)anchor {
-    if (![anchor isKindOfClass:[ARPlaneAnchor class]]) {
-        return;
-    }
-    if(!isWorldPlaneDefined) {
-        NSLog(@"get plane");
-        WorldPlane *plane = [[WorldPlane alloc] initWithAnchor: (ARPlaneAnchor *)anchor];
-        worldPlane = plane;
-        worldPlaneId = anchor.identifier;
-        [node addChildNode:plane];
-        isWorldPlaneDefined = true;
-    }
-}
-
-- (void)renderer:(id<SCNSceneRenderer>)renderer didUpdateNode:(SCNNode *)node forAnchor:(ARAnchor *)anchor {
-    if(isWorldPlaneDefined) {
-        if (anchor.identifier == worldPlaneId) {
-            [worldPlane update:anchor];
-            if (!isWorldPlaneFinished) {
-                worldPlaneUpdateTimes ++;
-                if(worldPlaneUpdateTimes > 10) {
-                    [[[worldPlane planeGeometry] materials] firstObject].transparency = 0.0;
-                    isWorldPlaneFinished = true;
-                }
-            }
-            
-        }
-    }
-}
-
-- (void) renderer:(id<SCNSceneRenderer>)renderer didRemoveNode:(SCNNode *)node forAnchor:(ARAnchor *)anchor {
+#pragma mark - SubMenuButton
+- (IBAction)subMenuButtonClicked:(id)sender {
     
 }
-
-
-
-
-- (void)session:(ARSession *)session didFailWithError:(NSError *)error {
-    // Present an error message to the user
-    
-}
-
-- (void)sessionWasInterrupted:(ARSession *)session {
-    // Inform the user that the session has been interrupted, for example, by presenting an overlay
-    
-}
-
-- (void)sessionInterruptionEnded:(ARSession *)session {
-    // Reset tracking and/or remove existing anchors if consistent tracking is required
-    
-}
-
-- (void)session:(ARSession *)session didUpdateFrame:(ARFrame *)frame {
-    
-    if(isDetected || !isWorldPlaneFinished) {
-        return;
-    }
-    
-    CVPixelBufferRef ref = [frame capturedImage];
-    CIImage *image = [CIImage imageWithCVImageBuffer:ref];
-    dispatch_async(barcodeQueue, ^{
-        
-        CGFloat iw = image.extent.size.width;
-        CGFloat ih = image.extent.size.height;
-        
-        CIDetector *detector = [CIDetector detectorOfType:CIDetectorTypeQRCode context:nil options:nil];
-        NSArray<CIFeature *> *features = [detector featuresInImage:image];
-        if (features.count > 0) {
-            CIQRCodeFeature *feature = (CIQRCodeFeature*) [features objectAtIndex:0];
-            
-            float qrCor[8];
-            
-            qrCor[0] = feature.topLeft.x / iw;
-            qrCor[1] = 1- feature.topLeft.y / ih;
-            qrCor[2] = feature.topRight.x / iw;
-            qrCor[3] = 1- feature.topRight.y / ih;
-            qrCor[4] = feature.bottomLeft.x / iw;
-            qrCor[5] = 1- feature.bottomLeft.y / ih;
-            qrCor[6] = feature.bottomRight.x / iw;
-            qrCor[7] = 1- feature.bottomRight.y / ih;
-            
-            NSArray<ARHitTestResult *> *rTL = [frame hitTest:CGPointMake(qrCor[0], qrCor[1]) types:ARHitTestResultTypeExistingPlane];
-            
-            NSArray<ARHitTestResult *> *rTR = [frame hitTest:CGPointMake(qrCor[2], qrCor[3]) types:ARHitTestResultTypeExistingPlane];
-            
-            NSArray<ARHitTestResult *> *rBL = [frame hitTest:CGPointMake(qrCor[4], qrCor[5]) types:ARHitTestResultTypeExistingPlane];
-            
-            NSArray<ARHitTestResult *> *rBR = [frame hitTest:CGPointMake(qrCor[6], qrCor[7]) types:ARHitTestResultTypeExistingPlane];
-            
-            if(rTL.count != 0 && rTR.count !=0 && rBL.count != 0 && rBR.count != 0) {
-                NSLog(@"GOT");
-                
-                SCNNode *box1 = [_sceneView.scene.rootNode childNodeWithName:@"box1" recursively:YES];
-                [box1 setTransform:SCNMatrix4FromMat4([[rTL firstObject] worldTransform])];
-                matrix_float4x4 m1 = [[rTL firstObject] worldTransform];
-                [box1 setScale:SCNVector3Make(0.01, 0.01, 0.01)];
-                NSLog(@"x:%f y:%f z:%f", box1.position.x, box1.position.y, box1.position.z);
-                
-                SCNNode *box2 = [_sceneView.scene.rootNode childNodeWithName:@"box2" recursively:YES];
-                [box2 setTransform:SCNMatrix4FromMat4([[rTR firstObject] worldTransform])];
-                matrix_float4x4 m2 = [[rTR firstObject] worldTransform];
-                [box2 setScale:SCNVector3Make(0.01, 0.01, 0.01)];
-                NSLog(@"x:%f y:%f z:%f", box2.position.x, box2.position.y, box2.position.z);
-                
-                SCNNode *box3 = [_sceneView.scene.rootNode childNodeWithName:@"box3" recursively:YES];
-                [box3 setTransform:SCNMatrix4FromMat4([[rBL firstObject] worldTransform])];
-                matrix_float4x4 m3 = [[rBL firstObject] worldTransform];
-                [box3 setScale:SCNVector3Make(0.01, 0.01, 0.01)];
-                NSLog(@"x:%f y:%f z:%f", box3.position.x, box3.position.y, box3.position.z);
-                
-                SCNNode *box4 = [_sceneView.scene.rootNode childNodeWithName:@"box4" recursively:YES];
-                [box4 setTransform:SCNMatrix4FromMat4([[rBR firstObject] worldTransform])];
-                matrix_float4x4 m4 = [[rBR firstObject] worldTransform];
-                [box4 setScale:SCNVector3Make(0.01, 0.01, 0.01)];
-                NSLog(@"x:%f y:%f z:%f", box4.position.x, box3.position.y, box3.position.z);
-                
-                double x = rTL.firstObject.worldTransform.columns[3][0] - rBL.firstObject.worldTransform.columns[3][0];
-                double y = rTL.firstObject.worldTransform.columns[3][2] - rBL.firstObject.worldTransform.columns[3][2];
-
-                double a = sqrtf(x*x + y*y);
-
-                CGPoint qv = CGPointMake(x / a, y / a);
-                CGPoint ve = CGPointMake(0,  -1);
-                double cosAngle = (qv.x * ve.x + qv.y * ve.y)/
-                ( sqrtf(qv.x * qv.x + qv.y * qv.y) * sqrtf(ve.x * ve.x + ve.y * ve.y) );
-                double thelt = acos(cosAngle);
-                if(qv.x < 0) thelt = -thelt;
-
-                [box1 setRotation:SCNVector4Make(0, 1, 0, -thelt)];
-                [box2 setRotation:SCNVector4Make(0, 1, 0, -thelt)];
-                [box3 setRotation:SCNVector4Make(0, 1, 0, -thelt)];
-                [box4 setRotation:SCNVector4Make(0, 1, 0, -thelt)];
-                
-                double centerX = ( rTL.firstObject.worldTransform.columns[3][0] + rBL.firstObject.worldTransform.columns[3][0] + rTR.firstObject.worldTransform.columns[3][0] + rBR.firstObject.worldTransform.columns[3][0] ) /4;
-                double centerY = ( rTL.firstObject.worldTransform.columns[3][1] + rBL.firstObject.worldTransform.columns[3][1] + rTR.firstObject.worldTransform.columns[3][1] + rBR.firstObject.worldTransform.columns[3][1] ) /4;
-                double centerZ = ( rTL.firstObject.worldTransform.columns[3][2] + rBL.firstObject.worldTransform.columns[3][2] + rTR.firstObject.worldTransform.columns[3][2] + rBR.firstObject.worldTransform.columns[3][2] ) /4;
-                
-                
-                SCNNode *world = [_sceneView.scene.rootNode childNodeWithName:@"Arachne" recursively:YES];
-                [world setPosition:SCNVector3Make(centerX, centerY, centerZ)];
-                [world setRotation:SCNVector4Make(0, 1, 0, -thelt)];
-                NSLog(@"x:%f y:%f z:%f", world.position.x, world.position.y, world.position.z);
-                
-//                NSLog(@"X:%f, Y:%f", qv.x, qv.y);
-                
-                isDetected = true;
-            }
-        }
-    });
-    
-}
-
 
 @end
