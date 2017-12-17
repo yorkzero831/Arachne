@@ -257,7 +257,7 @@
         SCNBox *box = [[SCNBox alloc] init];
         SCNNode *node = [SCNNode nodeWithGeometry:box];
         
-        float px = resluts.firstObject.worldTransform.columns[3][0] + centerPoint.x;
+        float px = resluts.firstObject.worldTransform.columns[3][0];
         float py = resluts.firstObject.worldTransform.columns[3][1];
         float pz = resluts.firstObject.worldTransform.columns[3][2];
         
