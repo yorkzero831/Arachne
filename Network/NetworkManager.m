@@ -23,7 +23,7 @@ static NetworkManager* _instance = nil;
 - (void)sentMessage:(NSString *)subURL :(NSString *)message :(void (^)(NSString *data)) callback{
     
     NSString* fixMessage = [message stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-    NSString* urlS = [NSString stringWithFormat:@"http://172.20.10.9:8080/%@?value=%@", subURL, message];
+    NSString* urlS = [NSString stringWithFormat:@"http://172.20.10.9:8080/%@?value=%@", subURL, fixMessage];
     NSURL *url = [NSURL URLWithString:urlS];
     NSURLRequest *request =[NSURLRequest requestWithURL:url];
     NSURLSession *session = [NSURLSession sharedSession];
