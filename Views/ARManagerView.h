@@ -14,5 +14,7 @@
 - (void) ARManagerViewConfigureSession;
 - (void) ARManagerViewStop;
 - (void) setSelectBlockName :(NSString*)name;
-
+- (void)SetAbleToSetNewBlock :(Boolean) value;
+- (float *)getLastNodePos;
+- (void)CreateBlockWithPos :(float) x : (float) y : (float) z;
 @end

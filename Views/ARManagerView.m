@@ -38,13 +38,17 @@
     
     NSString* selectBlockName;
     
+    Boolean isAbleToSetNewBlock;
+    SCNNode *lastNode;
+    float lastSetPoint[3];
+    
 }
 
 - (void) ARManagerViewLoaded {
     self.delegate = self;
     self.session.delegate = self;
-    self.showsStatistics = true;
-    self.debugOptions = ARSCNDebugOptionShowWorldOrigin | ARSCNDebugOptionShowFeaturePoints;
+    //self.showsStatistics = true;
+    //self.debugOptions = ARSCNDebugOptionShowWorldOrigin | ARSCNDebugOptionShowFeaturePoints;
     
     // Create a new scene
     SCNScene *scene = [SCNScene sceneNamed:@"art.scnassets/ship.scn"];
@@ -60,6 +64,16 @@
     isWorldPlaneFinished = false;
     worldPlaneUpdateTimes = 0;
     
+    isAbleToSetNewBlock = false;
+    
+}
+
+- (void)SetAbleToSetNewBlock :(Boolean) value {
+    isAbleToSetNewBlock = value;
+}
+
+- (float *)getLastNodePos {
+    return lastSetPoint;
 }
 
 - (void) ARManagerViewConfigureSession {
@@ -226,6 +240,7 @@
 #pragma mark UITouch
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     NSLog(@"touched");
+    if(!isAbleToSetNewBlock) return;
     UITouch *touch = [[touches allObjects] firstObject];
     CGPoint point = [touch locationInView:self];
     NSLog(@"x: %f, y:%f", point.x, point.y);
@@ -245,6 +260,12 @@
     selectBlockName = name;
 }
 
+- (void)removeLastBlock {
+    if(lastNode != nil) {
+        [lastNode removeFromParentNode];
+    }
+}
+
 - (void)createBlock :(CGPoint)point {
     CGRect screenBounds = [self bounds];
     
@@ -261,6 +282,11 @@
         float py = resluts.firstObject.worldTransform.columns[3][1];
         float pz = resluts.firstObject.worldTransform.columns[3][2];
         
+        lastSetPoint[0] = px - centerPoint.x;
+        lastSetPoint[1] = py - centerPoint.y;
+        lastSetPoint[2] = pz - centerPoint.z;
+        lastNode = node;
+        
         NSLog(@"x:%f y:%f z:%f", px, py, pz);
         
         [node setPosition:SCNVector3Make(px, py, pz)];
@@ -268,6 +294,19 @@
         [node setScale:SCNVector3Make(0.02, 0.02, 0.02)];
         [self.scene.rootNode addChildNode:node];
     }
+    isAbleToSetNewBlock = false;
+}
+
+- (void)CreateBlockWithPos :(float) x : (float) y : (float) z {
+    SCNBox *box = [[SCNBox alloc] init];
+    SCNNode *node = [SCNNode nodeWithGeometry:box];
+    float px = x + centerPoint.x;
+    float py = y + centerPoint.y;
+    float pz = z + centerPoint.z;
+    [node setPosition:SCNVector3Make(px, py, pz)];
+    [node setRotation:SCNVector4Make(0, 1, 0, -rotateAnge)];
+    [node setScale:SCNVector3Make(0.02, 0.02, 0.02)];
+    [self.scene.rootNode addChildNode:node];
 }
 
 
