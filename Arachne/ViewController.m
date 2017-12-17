@@ -115,7 +115,7 @@
         pos[1] = [[dic objectForKey:@"posY"] floatValue];
         pos[2] = [[dic objectForKey:@"posZ"] floatValue];
         
-        [_sceneView CreateBlockWithPos:pos[0] :pos[1] :pos[2]];
+        [_sceneView ShowBlockWithPos:pos[0] :pos[1] :pos[2]];
     }];
 }
 

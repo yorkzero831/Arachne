@@ -17,4 +17,5 @@
 - (void)SetAbleToSetNewBlock :(Boolean) value;
 - (float *)getLastNodePos;
 - (void)CreateBlockWithPos :(float) x : (float) y : (float) z;
+- (void)ShowBlockWithPos :(float) x : (float) y : (float) z ;
 @end

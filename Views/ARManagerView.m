@@ -40,6 +40,7 @@
     
     Boolean isAbleToSetNewBlock;
     SCNNode *lastNode;
+    SCNNode *showNode;
     float lastSetPoint[3];
     
 }
@@ -141,6 +142,19 @@
 - (void)session:(ARSession *)session didUpdateFrame:(ARFrame *)frame {
     
     if(isDetected || !isWorldPlaneFinished) {
+        if(isDetected && showNode!= nil) {
+            
+            matrix_float4x4 trans = [frame.camera transform];
+            SCNVector3 distance = SCNVector3Make(
+                                      showNode.position.x - trans.columns[3][0],
+                                      showNode.position.y - trans.columns[3][1],
+                                      showNode.position.z - trans.columns[3][2]);
+            float length = sqrtf(distance.x * distance.x + distance.y * distance.y + distance.z * distance.z);
+            float scale = 5 * (length ) /50;
+            NSLog(@"%f", scale);
+            [showNode setScale:SCNVector3Make(scale, scale, scale)];
+            
+        }
         return;
     }
     
@@ -307,6 +321,27 @@
     [node setRotation:SCNVector4Make(0, 1, 0, -rotateAnge)];
     [node setScale:SCNVector3Make(0.02, 0.02, 0.02)];
     [self.scene.rootNode addChildNode:node];
+}
+
+- (void)ShowBlockWithPos :(float) x : (float) y : (float) z {
+    float px = x + centerPoint.x;
+    float py = y + centerPoint.y;
+    float pz = z + centerPoint.z;
+    if(showNode == nil) {
+        SCNBox *box = [[SCNBox alloc] init];
+        SCNNode *node = [SCNNode nodeWithGeometry:box];
+        showNode = node;
+        [node setPosition:SCNVector3Make(px, py, pz)];
+        [node setRotation:SCNVector4Make(0, 1, 0, -rotateAnge)];
+        [node setScale:SCNVector3Make(0.02, 0.02, 0.02)];
+        [self.scene.rootNode addChildNode:node];
+        return;
+    }
+    
+    [showNode setPosition:SCNVector3Make(px, py, pz)];
+    [showNode setRotation:SCNVector4Make(0, 1, 0, -rotateAnge)];
+    [showNode setScale:SCNVector3Make(0.02, 0.02, 0.02)];
+    
 }
 
 
