@@ -9,6 +9,8 @@
 #import "ViewController.h"
 #import "ARManagerView.h"
 #import "SubMenu.h"
+#import "JsonPaser.h"
+#import "NetworkManager.h"
 
 
 
@@ -20,6 +22,14 @@
 @property (weak, nonatomic) IBOutlet SubMenu *subMenu;
 @property (nonatomic , strong)NSArray *data;
 
+@property (weak, nonatomic) IBOutlet UIButton *searchButton;
+@property (weak, nonatomic) IBOutlet UITextField *searchText;
+@property (weak, nonatomic) IBOutlet UIView *mask;
+@property (weak, nonatomic) IBOutlet UIActivityIndicatorView *waiter;
+@property (weak, nonatomic) IBOutlet UIView *searchMenu;
+
+@property (weak, nonatomic) IBOutlet UIView *addMenu;
+@property (weak, nonatomic) IBOutlet UITextField *addText;
 
 @end
 
@@ -40,6 +50,11 @@
                           @"OR"
                         ,nil];
     selectBlockName = [_data firstObject];
+    
+    NSString *search = [JsonPaser getSearchJson:@"jjj"];
+    [[NetworkManager getInstance] sentMessage:@"getSearch" :search :^(NSString *data){
+        NSLog(@"OVER");
+    }];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -84,5 +99,67 @@
     
 }
 
+- (IBAction)searchButtonClicked:(id)sender {
+    NSString *keyword = [_searchText text];
+    NSString *sentS =[JsonPaser getSearchJson:keyword];
+    //[self startWaiting];
+    [self.view endEditing:YES];
+    
+    [[NetworkManager getInstance] sentMessage:@"getSearch" :sentS :^(NSString *data) {
+        if([data length] == 1) return ;
+        NSDictionary *dic = [JsonPaser dictionaryWithJsonString:data];
+        float pos[3];
+        if([dic objectForKey:@"posX"] == nil || [dic objectForKey:@"posY"] == nil || [dic objectForKey:@"posZ"] == nil) return;
+        
+        pos[0] = [[dic objectForKey:@"posX"] floatValue];
+        pos[1] = [[dic objectForKey:@"posY"] floatValue];
+        pos[2] = [[dic objectForKey:@"posZ"] floatValue];
+        
+        [_sceneView ShowBlockWithPos:pos[0] :pos[1] :pos[2]];
+    }];
+}
+
+- (IBAction)addButtonClicked:(id)sender {
+    NSString *nameString = [_addText text];
+    float *vector = [_sceneView getLastNodePos];
+    NSDictionary *dic = @{
+                     @"name": nameString,
+                     @"posX": [NSNumber numberWithFloat:vector[0]],
+                     @"posY": [NSNumber numberWithFloat:vector[1]],
+                     @"posZ": [NSNumber numberWithFloat:vector[2]]
+                     };
+    NSString *outS = [JsonPaser dictToJsonStr:dic];
+    //[self startWaiting];
+    [[NetworkManager getInstance] sentMessage:@"newPos" :outS :^(NSString *data) {
+        //[self stopWaitting];
+    }];
+}
+
+- (IBAction)clearButtonClicked:(id)sender {
+}
+
+- (IBAction)labelTouched:(id)sender {
+    bool addMenuHidden = [_addMenu isHidden];
+    bool searchMenuHidden = [_searchMenu isHidden];
+    
+    [_addMenu setHidden:!addMenuHidden];
+    [_searchMenu setHidden:!searchMenuHidden];
+    
+    if(addMenuHidden == false) {
+        [_sceneView SetAbleToSetNewBlock:false];
+    } else {
+        [_sceneView SetAbleToSetNewBlock:true];
+    }
+}
+
+- (void)startWaiting {
+    [_waiter startAnimating];
+    [_mask setHidden:false];
+}
+
+- (void)stopWaitting {
+    [_waiter stopAnimating];
+    [_mask setHidden:true];
+}
 
 @end
